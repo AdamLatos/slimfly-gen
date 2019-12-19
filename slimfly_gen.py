@@ -25,7 +25,6 @@
 
 import argparse
 import sys
-from collections import deque
 
 # Find primitive element
 
@@ -81,6 +80,27 @@ def create_routes(q, Fq, X1, X2):
                         routes[(1,xp,yp)].append((0,x,y))
     return routes
 
+def print_topology(graph):
+    switch_name = "switch"
+    switch_ports = 10
+    hca_name = "hca"
+    hca_ports = 1
+    next_free_port = {key: 1 for key in graph}
+    links = {}
+
+    for source in graph:
+        print(f"Switch {switch_ports} \"{switch_name + str(source)}\"")
+        for dest in graph[source]:
+            if (dest, source) in links:
+                (port_dest, port_source) = links[(dest, source)]
+                print(f"[{port_source}]    \"{switch_name + str(dest)}\"[{port_dest}]")
+            else:
+                print(f"[{next_free_port[source]}]    \"{switch_name + str(dest)}\"[{next_free_port[dest]}]")
+                links[(source,dest)] = (next_free_port[source], next_free_port[dest])
+                next_free_port[source] += 1
+                next_free_port[dest] += 1
+        print()
+
 
 def main():
 
@@ -93,7 +113,6 @@ def main():
 
     if q != 5:
         sys.exit("q != 5 not yet implemented!")
-    print(f"q = {q}")
 
     # Find Galois field
 
@@ -104,10 +123,12 @@ def main():
     (X1, X2) = find_generator_sets(q, primitive_elem)
     routes = create_routes(q, Fq, X1, X2)
 
-    print(f"Galois field: {list(Fq)}")
-    print(f"Primitive element: {primitive_elem}")
-    print(f"X1: {X1}")
-    print(f"X2: {X2}")
+    #print(f"q = {q}")
+    #print(f"Galois field: {list(Fq)}")
+    #print(f"Primitive element: {primitive_elem}")
+    #print(f"X1: {X1}")
+    #print(f"X2: {X2}")
+    print_topology(routes)
 
 
  
